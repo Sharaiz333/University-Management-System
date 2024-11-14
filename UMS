@@ -1,0 +1,458 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+class Department; // Forward declaration
+
+class University {
+private:
+    string uni_name;
+    int uni_id;
+    friend class Department;
+    friend void display(const University& obj1, const Department& obj2);
+};
+
+University u1;
+
+class Department : public University {
+private:
+    string dept_name;
+    int dept_id;
+    friend void display(const University& obj1, const Department& obj2);
+public:
+    void input(University obj) {
+        cout << "\nEnter university name: ";
+        cin >> uni_name; // Accessing directly
+        cout << "Enter university ID: ";
+        cin >> uni_id; // Accessing directly
+        cout << "Enter department name: ";
+        cin >> dept_name;
+        cout << "Enter department ID: ";
+        cin >> dept_id;
+        u1 = obj;
+    }
+};
+
+Department d1;
+
+// Function to display university and department details
+void display(const University& obj1, const Department& obj2) {
+    cout << "\nUniversity Name: " << obj1.uni_name;
+    cout << "\nUniversity ID: " << obj1.uni_id;
+    cout << "\nDepartment Name: " << obj2.dept_name;
+    cout << "\nDepartment ID: " << obj2.dept_id << endl;
+}
+
+// Doubly linked list node for student records
+struct StudentNode {
+    string s_name;
+    int s_roll_no;
+    string gender;
+    string location;
+    string f_name;
+    int f_mobilenumber;
+    int semester;
+    float gpa;
+    float cgpa;
+    StudentNode* next;
+    StudentNode* prev;
+};
+
+// Queue node
+struct QueueNode {
+    StudentNode* student;
+    QueueNode* next;
+};
+
+// Queue for managing student operations
+class Queue {
+private:
+    QueueNode* front;
+    QueueNode* rear;
+public:
+    Queue() : front(0), rear(0) {}
+
+    void enqueue(StudentNode* student) {
+        QueueNode* newNode = new QueueNode;
+        newNode->student = student;
+        newNode->next = 0;
+        if (rear) {
+            rear->next = newNode;
+        }
+        rear = newNode;
+        if (!front) {
+            front = newNode;
+        }
+    }
+
+    StudentNode* dequeue() {
+        if (!front) return 0;
+        QueueNode* temp = front;
+        front = front->next;
+        if (!front) rear = 0; // Queue is now empty
+        StudentNode* student = temp->student;
+        delete temp;
+        return student;
+    }
+
+    bool isEmpty() {
+        return front == 0;
+    }
+};
+
+class Student {
+private:
+    StudentNode* head;
+
+public:
+    Student() : head(0) {
+        loadFromFile(); // Load data from file on startup
+    }
+    
+    ~Student() {
+        saveToFile(); // Save data to file upon program exit
+    }
+
+    void menu();
+    void student_menu();
+    void institute_menu();
+    void create_data();
+    void update_data();
+    void display_data();
+    void search_data();
+    void delete_data();
+    void hit_scholarship();
+    void top();
+
+    void addStudentToList(string name, int roll_no, string gender, string location, string father_name,
+                          int father_mobile, int semester, float gpa, float cgpa);
+
+    void saveToFile(); // Save data to file
+    void loadFromFile(); // Load data from file
+};
+
+void Student::saveToFile() {
+    ofstream file("students.txt");
+    if (!file) {
+        cerr << "Unable to open file for writing.\n";
+        return;
+    }
+
+    StudentNode* temp = head;
+    while (temp) {
+        file << temp->s_name << " " << temp->s_roll_no << " " << temp->gender << " "
+             << temp->location << " " << temp->f_name << " " << temp->f_mobilenumber << " "
+             << temp->semester << " " << temp->gpa << " " << temp->cgpa << "\n";
+        temp = temp->next;
+    }
+    file.close();
+}
+
+void Student::loadFromFile() {
+    ifstream file("students.txt");
+    if (!file) {
+        cerr << "Unable to open file for reading.\n";
+        return;
+    }
+
+    string name, gender, location, father_name;
+    int roll_no, father_mobile, semester;
+    float gpa, cgpa;
+
+    while (file >> name >> roll_no >> gender >> location >> father_name >> father_mobile >> semester >> gpa >> cgpa) {
+        addStudentToList(name, roll_no, gender, location, father_name, father_mobile, semester, gpa, cgpa);
+    }
+    file.close();
+}
+
+void Student::menu() {
+    int choice1 = 0;
+    while (choice1 != 3) {
+        cout << "\n\n\t\t\t\t*****MAIN MENU*****";
+        cout << "\nPress 1 for student menu ";
+        cout << "\t\tPress 2 for institute menu";
+        cout << "\t\tPress 3 to exit\n";
+        cin >> choice1;
+        switch (choice1) {
+            case 1:
+                student_menu();
+                break;
+            case 2:
+                institute_menu();
+                break;
+            case 3:
+                cout << "\n\n\t\t\t\tTHANK YOU";
+                break;
+            default:
+                cout << "\n\n\t\t\t\tINVALID OPTION";
+        }
+    }
+}
+
+void Student::student_menu() {
+    int choice = 0;
+    while (choice != 8) {
+        cout << "\n\n\t\t\t\t*****MENU*****";
+        cout << "\nPress 1 to enter new student's data ";
+        cout << "\t\tPress 2 to update existing student data ";
+        cout << "\nPress 3 to display all data ";
+        cout << "\t\t\tPress 4 to search for a specific student ";
+        cout << "\nPress 5 to delete student's data ";
+        cout << "\t\tPress 6 to search for scholarship eligible students";
+        cout << "\nPress 7 to display top students ";
+        cout << "\t\t\tPress 8 to exit";
+        cout << "\nHaving GPA more than or equal to 3.5\n";
+        cin >> choice;
+        switch (choice) {
+            case 1:
+                create_data();
+                break;
+            case 2:
+                update_data();
+                break;
+            case 3:
+                display_data();
+                break;
+            case 4:
+                search_data();
+                break;
+            case 5:
+                delete_data();
+                break;
+            case 6:
+                hit_scholarship();
+                break;
+            case 7:
+                top();
+                break;
+        }
+    }
+}
+
+void Student::institute_menu() {
+    int choice2 = 0;
+    while (choice2 != 3) {
+        cout << "\n\n\t\t\t\t*****INSTITUTE MENU*****";
+        cout << "\nPress 1 to enter institute detail\t\tPress 2 to display institute detail\t\tPress 3 to exit\n";
+        cin >> choice2;
+        switch (choice2) {
+            case 1:
+                d1.input(u1);
+                break;
+            case 2:
+                display(u1, d1); // Now defined
+                break;
+            case 3:
+                break;
+            default:
+                cout << "\n\n\t\t\t\tINVALID OPTION!";
+        }
+    }
+}
+
+void Student::create_data() {
+    string name, father_name, gender, location;
+    int roll_no, father_mobile, semester;
+    float gpa, cgpa;
+
+    cout << "\n\n\t\t\t\t*****STUDENT DATA ENTRY PANEL*****";
+    cout << "\nEnter student name: ";
+    cin >> name;
+    cout << "Enter student roll no: ";
+    cin >> roll_no;
+    cout << "Enter gender: ";
+    cin >> gender;
+    cout << "Enter location: ";
+    cin >> location;
+    cout << "Enter father's name: ";
+    cin >> father_name;
+    cout << "Enter father's mobile number: ";
+    cin >> father_mobile;
+    cout << "Enter semester: ";
+    cin >> semester;
+    cout << "Enter GPA: ";
+    cin >> gpa;
+    cout << "Enter CGPA: ";
+    cin >> cgpa;
+
+    // Add to the linked list
+    addStudentToList(name, roll_no, gender, location, father_name, father_mobile, semester, gpa, cgpa);
+}
+
+void Student::addStudentToList(string name, int roll_no, string gender, string location, string father_name,
+                               int father_mobile, int semester, float gpa, float cgpa) {
+    StudentNode* newStudent = new StudentNode;
+    newStudent->s_name = name;
+    newStudent->s_roll_no = roll_no;
+    newStudent->gender = gender;
+    newStudent->location = location;
+    newStudent->f_name = father_name;
+    newStudent->f_mobilenumber = father_mobile;
+    newStudent->semester = semester;
+    newStudent->gpa = gpa;
+    newStudent->cgpa = cgpa;
+    newStudent->next = 0;
+    newStudent->prev = 0;
+
+    if (!head) {
+        head = newStudent; // First student in the list
+    } else {
+        StudentNode* temp = head;
+        while (temp->next) {
+            temp = temp->next; // Traverse to the end of the list
+        }
+        temp->next = newStudent; // Link new student
+        newStudent->prev = temp; // Set previous link
+    }
+
+    cout << "\n\n\t\t\t\tSTUDENT DATA REGISTERED!";
+    saveToFile(); // Save data to file after adding new student
+}
+
+void Student::update_data() {
+    int roll_no;
+    cout << "\nEnter the roll no of student to update data: ";
+    cin >> roll_no;
+
+    // Find the student in the linked list
+    StudentNode* temp = head;
+    while (temp) {
+        if (temp->s_roll_no == roll_no) {
+            cout << "\nEnter updated name: ";
+            cin >> temp->s_name;
+            cout << "Enter father's correct name: ";
+            cin >> temp->f_name;
+            cout << "Enter father's correct mobile number: ";
+            cin >> temp->f_mobilenumber;
+            cout << "Enter updated semester: ";
+            cin >> temp->semester;
+            cout << "Enter updated GPA: ";
+            cin >> temp->gpa;
+            cout << "Enter updated CGPA: ";
+            cin >> temp->cgpa;
+            cout << "Enter updated location: ";
+            cin >> temp->location;
+            cout << "\n\n\t\t\t\tSTUDENT DETAIL UPDATED";
+            return;
+        }
+        temp = temp->next;
+    }
+    cout << "\n\n\t\t\t\tSTUDENT NOT FOUND";
+}
+
+void Student::display_data() {
+    int count = 1;
+    cout << "\n\n\t\t\t\t*****DISPLAY DATA PANEL*****";
+    if (!head) {
+        cout << "\n\n\t\t\t\tNO STUDENT RECORDS FOUND";
+        return;
+    }
+
+    StudentNode* temp = head;
+    while (temp) {
+        cout << "\n\n\t\t\t\tStudent " << count;
+        cout << "\nName: " << temp->s_name;
+        cout << "\nRoll No: " << temp->s_roll_no;
+        cout << "\nGender: " << temp->gender;
+        cout << "\nLocation: " << temp->location;
+        cout << "\nFather's Name: " << temp->f_name;
+        cout << "\nFather's Mobile No: " << temp->f_mobilenumber;
+        cout << "\nSemester: " << temp->semester;
+        cout << "\nGPA: " << temp->gpa;
+        cout << "\nCGPA: " << temp->cgpa;
+        count++;
+        temp = temp->next;
+    }
+}
+
+void Student::search_data() {
+    int roll_no;
+    cout << "\nEnter roll no of student to find data: ";
+    cin >> roll_no;
+
+    StudentNode* temp = head;
+    while (temp) {
+        if (temp->s_roll_no == roll_no) {
+            cout << "\nNAME: " << temp->s_name;
+            cout << "\nROLL NO: " << temp->s_roll_no;
+            cout << "\nGENDER: " << temp->gender;
+            cout << "\nLOCATION: " << temp->location;
+            cout << "\nFATHER'S NAME: " << temp->f_name;
+            cout << "\nFATHER'S MOBILE NUMBER: " << temp->f_mobilenumber;
+            cout << "\nGPA: " << temp->gpa;
+            cout << "\nCGPA: " << temp->cgpa;
+            return;
+        }
+        temp = temp->next;
+    }
+    cout << "\n\n\t\t\t\tSTUDENT DATA DOES NOT EXIST";
+}
+
+void Student::delete_data() {
+    int roll_no;
+    cout << "\nEnter the roll no to delete data: ";
+    cin >> roll_no;
+
+    StudentNode* temp = head;
+    while (temp) {
+        if (temp->s_roll_no == roll_no) {
+            if (temp->prev) {
+                temp->prev->next = temp->next;
+            } else {
+                head = temp->next; // Deleting the first node
+            }
+            if (temp->next) {
+                temp->next->prev = temp->prev;
+            }
+            delete temp;
+            cout << "\n\n\t\t\t\tSTUDENT DATA SUCCESSFULLY DELETED";
+            return;
+        }
+        temp = temp->next;
+    }
+    cout << "\n\n\t\t\t\tSTUDENT DATA NOT FOUND";
+}
+
+void Student::hit_scholarship() {
+    cout << "\n\n\t\t\t\t*****HIT SCHOLARSHIP PANEL*****";
+    StudentNode* temp = head;
+    bool found = false;
+
+    while (temp) {
+        if (temp->gpa >= 3.0) {
+            cout << "\nNAME: " << temp->s_name << "\tROLL NO: " << temp->s_roll_no
+                 << "\tGPA: " << temp->gpa << "\tCGPA: " << temp->cgpa;
+            found = true;
+        }
+        temp = temp->next;
+    }
+    if (!found) {
+        cout << "\n\n\t\t\t\tNO STUDENT ELIGIBLE FOR SCHOLARSHIP";
+    }
+}
+
+void Student::top() {
+    cout << "\n\n\t\t\t\t*****STUDENTS WITH GPA 3.5+*****";
+    StudentNode* temp = head;
+    bool found = false;
+
+    while (temp) {
+        if (temp->gpa >= 3.5) {
+            cout << "\nNAME: " << temp->s_name << "\tROLL NO: " << temp->s_roll_no
+                 << "\tGPA: " << temp->gpa << "\tCGPA: " << temp->cgpa;
+            found = true;
+        }
+        temp = temp->next;
+    }
+    if (!found) {
+        cout << "\n\n\t\t\t\tNO STUDENT HAVE GPA 3.5+";
+    }
+}
+
+int main() {
+    Student s1;
+    s1.menu();
+    return 0;
+}
