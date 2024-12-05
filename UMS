@@ -164,12 +164,12 @@ void Student::loadFromFile() {
     int roll_no, father_mobile, semester;
     float gpa, cgpa;
 
-    while (getline(file, name) && file >> roll_no >> ws >> gender >> ws >> location >> ws >>
-           father_name >> father_mobile >> semester >> gpa >> cgpa) {
+    while (file >> name >> roll_no >> gender >> location >> father_name >> father_mobile >> semester >> gpa >> cgpa) {
         addStudentToList(name, roll_no, gender, location, father_name, father_mobile, semester, gpa, cgpa);
     }
     file.close();
 }
+
 
 void Student::menu() {
     int choice1 = 0;
