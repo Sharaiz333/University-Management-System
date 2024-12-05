@@ -1,10 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits>
 
 using namespace std;
 
-class Department; // Forward declaration
+class Department;
 
 class University {
 private:
@@ -22,13 +23,15 @@ private:
     int dept_id;
     friend void display(const University& obj1, const Department& obj2);
 public:
-    void input(University obj) {
-        cout << "\nEnter university name: ";
-        cin >> uni_name; // Accessing directly
-        cout << "Enter university ID: ";
-        cin >> uni_id; // Accessing directly
+    void input(University& obj) {
+        cout << "\nEnter University name: ";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+        getline(cin, obj.uni_name);
+        cout << "Enter University ID: ";
+        cin >> obj.uni_id; // Accessing directly
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
         cout << "Enter department name: ";
-        cin >> dept_name;
+        getline(cin, dept_name);
         cout << "Enter department ID: ";
         cin >> dept_id;
         u1 = obj;
@@ -161,7 +164,8 @@ void Student::loadFromFile() {
     int roll_no, father_mobile, semester;
     float gpa, cgpa;
 
-    while (file >> name >> roll_no >> gender >> location >> father_name >> father_mobile >> semester >> gpa >> cgpa) {
+    while (getline(file, name) && file >> roll_no >> ws >> gender >> ws >> location >> ws >>
+           father_name >> father_mobile >> semester >> gpa >> cgpa) {
         addStudentToList(name, roll_no, gender, location, father_name, father_mobile, semester, gpa, cgpa);
     }
     file.close();
@@ -242,7 +246,7 @@ void Student::institute_menu() {
                 d1.input(u1);
                 break;
             case 2:
-                display(u1, d1); // Now defined
+                display(u1, d1);
                 break;
             case 3:
                 break;
@@ -259,15 +263,17 @@ void Student::create_data() {
 
     cout << "\n\n\t\t\t\t*****STUDENT DATA ENTRY PANEL*****";
     cout << "\nEnter student name: ";
-    cin >> name;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, name);
     cout << "Enter student roll no: ";
     cin >> roll_no;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cout << "Enter gender: ";
-    cin >> gender;
+    getline(cin, gender);
     cout << "Enter location: ";
-    cin >> location;
+    getline(cin, location);
     cout << "Enter father's name: ";
-    cin >> father_name;
+    getline(cin, father_name);
     cout << "Enter father's mobile number: ";
     cin >> father_mobile;
     cout << "Enter semester: ";
